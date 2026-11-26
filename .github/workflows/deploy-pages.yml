@@ -20,12 +20,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Prepare static site
+      - name: Prepare static site and raster PWA icons
         run: |
-          mkdir -p dist
-          cp index.html manifest.webmanifest sw.js README.md dist/
           mkdir -p dist/icons
+          cp index.html manifest.webmanifest sw.js README.md dist/
           cp icons/icon.svg dist/icons/
+          python -m pip install --user cairosvg
+          python - <<'PY'
+          import cairosvg
+          source = 'icons/icon.svg'
+          for size in (192, 512):
+              cairosvg.svg2png(url=source, write_to=f'dist/icons/icon-{size}.png', output_width=size, output_height=size)
+          PY
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
